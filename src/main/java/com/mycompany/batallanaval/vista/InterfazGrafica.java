@@ -1,104 +1,104 @@
-package com.mycompany.batallanaval.vista;
-import com.mycompany.batallanaval.controlador.ControladorUsuario;
-import com.mycompany.batallanaval.controlador.ControladorReporte;
-import com.mycompany.batallanaval.modelo.Usuario;
-import com.mycompany.batallanaval.modelo.Partida;
-import com.mycompany.batallanaval.modelo.Reporte;
+package vista;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 public class InterfazGrafica extends JFrame {
-    private ControladorUsuario controladorUsuario;
-    private ControladorReporte controladorReporte;
-    private JTextArea areaReportes;
+    private final int dimension;
+    private final JButton[][] botones;
 
-    public InterfazGrafica() {
-        controladorUsuario = new ControladorUsuario();
-        controladorReporte = new ControladorReporte();
+    private final ImageIcon iconoAgua;
+    private final ImageIcon iconoBarco;
 
-        setTitle("Batalla Naval");
-        setSize(600, 400);
+    public InterfazGrafica(int dimension) {
+        this.dimension = dimension;
+        this.botones = new JButton[dimension][dimension];
+
+        // Cargar íconos
+        iconoAgua = new ImageIcon(getClass().getResource("/agua.png"));
+        iconoBarco = new ImageIcon(getClass().getResource("/barco.png"));
+
+        setTitle("Batalla Naval - Tablero");
+        setSize(600, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
+        JPanel panelTablero = new JPanel(new GridLayout(dimension, dimension));
+        inicializarBotones(panelTablero);
 
-        JPanel menuPanel = new JPanel();
-        JButton btnRegistrar = new JButton("Registrar Usuario");
-        JButton btnPartida = new JButton("Iniciar Partida");
-        JButton btnReportes = new JButton("Ver Reportes");
-
-        menuPanel.add(btnRegistrar);
-        menuPanel.add(btnPartida);
-        menuPanel.add(btnReportes);
-
-        areaReportes = new JTextArea();
-        areaReportes.setEditable(false);
-        JScrollPane scroll = new JScrollPane(areaReportes);
-
-        panel.add(menuPanel, BorderLayout.NORTH);
-        panel.add(scroll, BorderLayout.CENTER);
-        add(panel);
-
-        // Listeners
-        btnRegistrar.addActionListener(e -> registrarUsuario());
-        btnPartida.addActionListener(e -> iniciarPartida());
-        btnReportes.addActionListener(e -> mostrarReportes());
+        add(panelTablero, BorderLayout.CENTER);
     }
 
-    private void registrarUsuario() {
-        String nombre = JOptionPane.showInputDialog(this, "Ingrese nombre del usuario:");
-        if (nombre != null && !nombre.isBlank()) {
-            controladorUsuario.crearUsuario(nombre);
-            JOptionPane.showMessageDialog(this, "Usuario registrado con éxito.");
+    private void inicializarBotones(JPanel panelTablero) {
+        for (int i = 0; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++) {
+                JButton boton = new JButton();
+                configurarBoton(boton, iconoAgua);
+
+                boton.addMouseListener(new HoverEfecto(boton));
+                botones[i][j] = boton;
+                panelTablero.add(boton);
+            }
         }
     }
 
-    private void iniciarPartida() {
-        String j1 = JOptionPane.showInputDialog(this, "Nombre del jugador 1:");
-        String j2 = JOptionPane.showInputDialog(this, "Nombre del jugador 2:");
+    private void configurarBoton(JButton boton, ImageIcon icono) {
+        boton.setMargin(new Insets(0, 0, 0, 0));
+        boton.setContentAreaFilled(false);
+        boton.setBorderPainted(false);
+        boton.setFocusPainted(false);
 
-        Usuario jugador1 = controladorUsuario.buscarUsuario(j1);
-        Usuario jugador2 = controladorUsuario.buscarUsuario(j2);
-
-        if (jugador1 == null || jugador2 == null) {
-            JOptionPane.showMessageDialog(this, "Ambos jugadores deben estar registrados.");
-            return;
-        }
-
-        Partida partida = new Partida(jugador1, jugador2);
-
-        String ganadorNombre = JOptionPane.showInputDialog(this, "Nombre del ganador:");
-        Usuario ganador = controladorUsuario.buscarUsuario(ganadorNombre);
-        if (ganador == null) {
-            JOptionPane.showMessageDialog(this, "El ganador debe estar registrado.");
-            return;
-        }
-
-        Usuario perdedor = (ganador == jugador1) ? jugador2 : jugador1;
-        partida.finalizarPartida(ganador, perdedor, 15);
-
-        Reporte reporte = new Reporte(partida);
-        controladorReporte.guardarReporte(reporte);
-
-        JOptionPane.showMessageDialog(this, "Partida finalizada.\n" + reporte.generarResumen());
+        boton.setIcon(escalarIcono(icono, 600 / dimension, 600 / dimension));
+        boton.setName(icono.equals(iconoBarco) ? "barco" : "agua");
     }
 
-    private void mostrarReportes() {
-        StringBuilder sb = new StringBuilder();
-        List<Reporte> lista = controladorReporte.getReportes();
+    private ImageIcon escalarIcono(ImageIcon icono, int ancho, int alto) {
+        Image img = icono.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
+    }
 
-        if (lista.isEmpty()) {
-            areaReportes.setText("No hay reportes disponibles.");
-            return;
+    private ImageIcon oscurecerIcono(ImageIcon icono, int ancho, int alto) {
+        Image img = icono.getImage();
+        BufferedImage buffered = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = buffered.createGraphics();
+        g2d.drawImage(img, 0, 0, ancho, alto, null);
+
+        g2d.setColor(new Color(0, 0, 0, 80)); // efecto tenue
+        g2d.fillRect(0, 0, ancho, alto);
+
+        g2d.dispose();
+        return new ImageIcon(buffered);
+    }
+
+    public void actualizarCelda(int fila, int columna, boolean hayBarco) {
+        configurarBoton(botones[fila][columna], hayBarco ? iconoBarco : iconoAgua);
+    }
+
+    // Clase interna para manejar el hover
+    private class HoverEfecto extends MouseAdapter {
+        private final JButton boton;
+
+        public HoverEfecto(JButton boton) {
+            this.boton = boton;
         }
 
-        for (Reporte r : lista) {
-            sb.append(r.generarReporte()).append("\n------------------\n");
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            boton.setIcon(oscurecerIcono((ImageIcon) boton.getIcon(), boton.getWidth(), boton.getHeight()));
         }
-        areaReportes.setText(sb.toString());
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            if ("barco".equals(boton.getName())) {
+                configurarBoton(boton, iconoBarco);
+            } else {
+                configurarBoton(boton, iconoAgua);
+            }
+        }
     }
 }
+
