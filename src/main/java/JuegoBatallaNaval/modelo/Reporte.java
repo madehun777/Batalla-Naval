@@ -1,27 +1,40 @@
 package JuegoBatallaNaval.modelo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 public class Reporte {
-    private List<Partida> partidas;
+    private Date fecha;
+    private Partida partida; 
+    private String resumen;
+    
+    // Constructor
+    public Reporte(Partida partida, String resumen) {
+        this.fecha = new Date(); 
+        this.partida = partida;
+        this.resumen = resumen;
+    }
+    
+    // Método de Lógica de Negocio (corregido para evitar NullPointerException)
+    public String generarResumen() {
+        String nombreGanador = (partida != null && partida.getGanador() != null) 
+                               ? partida.getGanador().getNombre() : "N/A";
 
-    public Reporte() {
-        this.partidas = new ArrayList<>();
+        return "Reporte de Partida del " + fecha.toString() + 
+               "\nGanador: " + nombreGanador + 
+               "\n" + this.resumen;
+    }
+    
+    // --- Getters y Setters (los mismos que antes) ---
+
+    public Date getFecha() {
+        return fecha;
     }
 
-    public void agregarPartida(Partida partida) {
-        partidas.add(partida);
+    public Partida getPartida() {
+        return partida;
     }
 
-    public List<Partida> getPartidas() {
-        return partidas;
-    }
-
-    public void mostrarReporte() {
-        System.out.println("===== Reporte de Partidas =====");
-        for (Partida p : partidas) {
-            System.out.println(p);
-        }
+    public String getResumen() {
+        return resumen;
     }
 }

@@ -1,32 +1,76 @@
+//clase solo para almacenar datos y gestionar las estadísticas internas del jugador (S).
 package JuegoBatallaNaval.modelo;
 
 public class Usuario {
     private String nombre;
-    private int edad;
+    private String username; // Usado para fines de identificación y login
+    private String password; // NOTA: En la práctica, se debe hashear
+    private int partidasJugadas;
+    private int partidasGanadas;
+    private int puntuacionTotal;
 
-    public Usuario(String nombre, int edad) {
+    // Constructor para el registro
+    public Usuario(String nombre, String username, String password) {
         this.nombre = nombre;
-        this.edad = edad;
+        this.username = username;
+        this.password = password;
+        this.partidasJugadas = 0;
+        this.partidasGanadas = 0;
+        this.puntuacionTotal = 0;
     }
+
+    // --- Métodos de Lógica de Negocio (del diagrama UML) ---
+
+    public void agregarVictoria(int puntos) {
+        this.partidasJugadas++;
+        this.partidasGanadas++;
+        this.puntuacionTotal += puntos;
+    }
+
+    public void perderPartida() {
+        this.partidasJugadas++;
+    }
+
+    public String getEstadisticas() {
+        return "Jugadas: " + partidasJugadas + ", Ganadas: " + partidasGanadas + ", Puntos: " + puntuacionTotal;
+    }
+    
+    // --- Getters y Setters ---
 
     public String getNombre() {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public String getUsername() {
+        return username;
     }
 
-    public int getEdad() {
-        return edad;
+    public String getPassword() {
+        return password;
     }
 
-    public void setEdad(int edad) {
-        this.edad = edad;
+    public int getPartidasJugadas() {
+        return partidasJugadas;
     }
 
-    @Override
-    public String toString() {
-        return "Usuario{" + "nombre='" + nombre + '\'' + ", edad=" + edad + '}';
+    public int getPartidasGanadas() {
+        return partidasGanadas;
+    }
+
+    public int getPuntuacionTotal() {
+        return puntuacionTotal;
+    }
+    
+    // Setters (útiles para actualizar stats)
+    public void setPartidasJugadas(int partidasJugadas) {
+        this.partidasJugadas = partidasJugadas;
+    }
+
+    public void setPartidasGanadas(int partidasGanadas) {
+        this.partidasGanadas = partidasGanadas;
+    }
+
+    public void setPuntuacionTotal(int puntuacionTotal) {
+        this.puntuacionTotal = puntuacionTotal;
     }
 }
