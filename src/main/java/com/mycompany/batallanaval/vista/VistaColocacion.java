@@ -5,131 +5,129 @@ import modelo.Barco;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class VistaColocacion extends JFrame {
+
     private Usuario usuario;
     private VistaTablero vistaTablero;
     private JPanel panelBarcos;
-    private JButton switchOrientacion;
-    private JLabel estadoOrientacion;
-    private String orientacionSeleccionada = "H";
-    private List<Barco> barcosPanel = new ArrayList<>();
+    private JLabel orientacionLabel;
 
     public VistaColocacion(Usuario usuario) {
         this.usuario = usuario;
-        setTitle("Colocación de Barcos - " + usuario.getNombre());
+
+        setTitle("ColocaciÃ³n de Barcos - " + usuario.getNombre());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // TABLERO
         vistaTablero = new VistaTablero(usuario.getTablero());
-        vistaTablero.setBackground(new Color(200, 230, 240)); // fondo azul claro
+        vistaTablero.setBackground(new Color(200, 230, 240));
+        vistaTablero.setBorder(null);
         add(vistaTablero, BorderLayout.CENTER);
 
         // PANEL DE BARCOS
-        panelBarcos = new JPanel();
-        panelBarcos.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 10));
+        panelBarcos = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 15));
         panelBarcos.setBackground(new Color(180, 220, 240));
         add(panelBarcos, BorderLayout.SOUTH);
 
-        // Botón de orientación con imagen
-        switchOrientacion = new JButton();
-        switchOrientacion.setPreferredSize(new Dimension(60, 60));
-        switchOrientacion.setToolTipText("Cambiar dirección de los barcos");
-
-        // TODO: coloca la imagen de orientación aquí
-        // switchOrientacion.setIcon(new ImageIcon("resources/imagen_orientacion.png"));
-
-        switchOrientacion.setContentAreaFilled(false);
-        switchOrientacion.setBorderPainted(false);
-        switchOrientacion.setFocusPainted(false);
-
-        // Estado de orientación
-        estadoOrientacion = new JLabel("Horizontal", SwingConstants.CENTER);
-        estadoOrientacion.setForeground(Color.DARK_GRAY);
-        estadoOrientacion.setFont(new Font("Arial", Font.PLAIN, 12));
-
-        JPanel panelOrientacion = new JPanel();
-        panelOrientacion.setLayout(new BorderLayout());
+        // Panel orientaciÃ³n
+        JPanel panelOrientacion = new JPanel(new BorderLayout());
         panelOrientacion.setOpaque(false);
-        panelOrientacion.add(switchOrientacion, BorderLayout.CENTER);
-        panelOrientacion.add(estadoOrientacion, BorderLayout.SOUTH);
 
+        JPanel contenedorIcono = new JPanel(new GridBagLayout());
+        contenedorIcono.setOpaque(false);
+        contenedorIcono.setPreferredSize(new Dimension(80, 80));
+
+        ImagenEscaladaLabel iconoSwitch = new ImagenEscaladaLabel("/Switch.png");
+        iconoSwitch.setPreferredSize(new Dimension(50, 50));
+        contenedorIcono.add(iconoSwitch);
+
+        orientacionLabel = new JLabel("Horizontal", SwingConstants.CENTER);
+        orientacionLabel.setForeground(Color.DARK_GRAY);
+        orientacionLabel.setFont(new Font("Arial", Font.BOLD, 12));
+
+        panelOrientacion.add(contenedorIcono, BorderLayout.CENTER);
+        panelOrientacion.add(orientacionLabel, BorderLayout.SOUTH);
         panelBarcos.add(panelOrientacion);
 
         // Crear barcos visualmente
-        crearBarco("Portaaviones", 4);
-        crearBarco("Buque", 3);
-        crearBarco("Submarino", 2);
-        crearBarco("Crucero", 1);
+        crearBarco("Portaaviones", 4, "/Portaaviones.png");
+        crearBarco("Destructor", 3, "/Destructor.png");
+        crearBarco("Submarino", 2, "/Submarino.png");
+        crearBarco("Crucero", 1, "/Crucero.png");
 
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    private void crearBarco(String tipo, int cantidad) {
-    JPanel panel = new JPanel();
-    panel.setLayout(new BorderLayout());
-    panel.setOpaque(false);
+    private void crearBarco(String tipo, int cantidad, String rutaImagen) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
 
-    JLabel imagenBarco = new JLabel();
-    imagenBarco.setHorizontalAlignment(SwingConstants.CENTER);
-    imagenBarco.setVerticalAlignment(SwingConstants.CENTER);
-    imagenBarco.setPreferredSize(new Dimension(60, 60));
+        JLabel imagenBarco = new ImagenEscaladaLabel(rutaImagen);
+        imagenBarco.setPreferredSize(new Dimension(80, 80));
 
-    // Selecciona la imagen según el tipo
-    String rutaImagen = switch (tipo.toLowerCase()) {
-        case "portaaviones" -> "resources/Portaaviones.png";
-        case "crucer" -> "resources/Crucero.png";
-        case "submarino" -> "resources/Submarino.png";
-        case "Destructor" -> "resources/Destructor.png";
-        default -> null;
-    };
+        JLabel texto = new JLabel(tipo + " x" + cantidad, SwingConstants.CENTER);
+        texto.setForeground(Color.DARK_GRAY);
+        texto.setFont(new Font("Arial", Font.BOLD, 12));
 
-    if (rutaImagen != null) {
-        imagenBarco.setIcon(new ImageIcon(rutaImagen));
+        panel.add(imagenBarco, BorderLayout.CENTER);
+        panel.add(texto, BorderLayout.SOUTH);
+
+        panelBarcos.add(panel);
     }
-
-    JLabel texto = new JLabel(tipo + " x" + cantidad, SwingConstants.CENTER);
-    texto.setForeground(Color.DARK_GRAY);
-    texto.setFont(new Font("Arial", Font.BOLD, 12));
-
-    panel.add(imagenBarco, BorderLayout.CENTER);
-    panel.add(texto, BorderLayout.SOUTH);
-
-    panelBarcos.add(panel);
-    barcosPanel.add(new Barco(tipo, cantidad));
-    }
-
 
     public VistaTablero getVistaTablero() {
         return vistaTablero;
     }
 
     public String getOrientacionSeleccionada() {
-        return orientacionSeleccionada;
+        return usuario.getOrientacion();
     }
-    
+
     public void marcarBarcoColocado(Barco barco) {
-    Component[] componentes = panelBarcos.getComponents();
-    for (Component c : componentes) {
-        if (c instanceof JPanel panel) {
-            // Asumimos que el JLabel de texto está en BorderLayout.SOUTH
-            Component[] hijos = panel.getComponents();
-            for (Component hijo : hijos) {
-                if (hijo instanceof JLabel label) {
-                    if (label.getText().startsWith(barco.getTipo())) {
-                        // Deshabilitar todo el panel del barco
-                        panel.setEnabled(false);
-                        panel.setVisible(false); // opcional, si quieres ocultarlo
-                        break;
+        for (Component c : panelBarcos.getComponents()) {
+            if (c instanceof JPanel panel) {
+                for (Component hijo : panel.getComponents()) {
+                    if (hijo instanceof JLabel label) {
+                        if (label.getText().startsWith(barco.getTipo())) {
+                            panel.setEnabled(false);
+                            panel.setVisible(false);
+                            break;
+                        }
                     }
                 }
             }
         }
     }
+
+    // JLabel personalizado para escalar imÃ¡genes automÃ¡ticamente
+    static class ImagenEscaladaLabel extends JLabel {
+        private Image imagen;
+
+        public ImagenEscaladaLabel(String ruta) {
+            try {
+                java.net.URL url = getClass().getResource(ruta);
+                if (url != null) {
+                    this.imagen = new ImageIcon(url).getImage();
+                } else {
+                    System.err.println("No se encontrÃ³ la imagen: " + ruta);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setVerticalAlignment(SwingConstants.CENTER);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (imagen != null) {
+                g.drawImage(imagen, 0, 0, getWidth(), getHeight(), this);
+            }
+        }
     }
 }
