@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.util.concurrent.*;
 
 public class ControladorColocacion {
+
     private Usuario usuario;
     private VistaColocacion vista;
     private ExecutorService executor;
@@ -18,7 +19,6 @@ public class ControladorColocacion {
         this.usuario = usuario;
         this.vista = new VistaColocacion(usuario);
         this.executor = Executors.newFixedThreadPool(2);
-
         inicializarDropListener();
     }
 
@@ -46,11 +46,14 @@ public class ControladorColocacion {
     private boolean validarColocacionConHilos(Barco barco, int fila, int col, String orientacion, Tablero tablero) {
         Future<Boolean> limitesFuture = executor.submit(() -> {
             int tam = barco.getTamano();
-            if (orientacion.equals("H")) return col + tam <= tablero.getDimension();
-            else return fila + tam <= tablero.getDimension();
+            return orientacion.equals("H")
+                    ? col + tam <= tablero.getDimension()
+                    : fila + tam <= tablero.getDimension();
         });
 
-        Future<Boolean> espacioFuture = executor.submit(() -> tablero.esPosicionValida(barco, fila, col, orientacion));
+        Future<Boolean> espacioFuture = executor.submit(() ->
+                tablero.esPosicionValida(barco, fila, col, orientacion)
+        );
 
         try {
             return limitesFuture.get() && espacioFuture.get();
@@ -59,5 +62,4 @@ public class ControladorColocacion {
             return false;
         }
     }
-    
 }
