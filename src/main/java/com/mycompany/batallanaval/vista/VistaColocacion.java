@@ -1,27 +1,24 @@
 package vista;
 
 import modelo.Usuario;
-import modelo.Barco;
+import modelo.Tablero;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class VistaColocacion extends JFrame {
 
-    private Usuario usuario;
     private VistaTablero vistaTablero;
     private JPanel panelBarcos;
     private JLabel orientacionLabel;
 
-    public VistaColocacion(Usuario usuario) {
-        this.usuario = usuario;
-
-        setTitle("ColocaciÃ³n de Barcos - " + usuario.getNombre());
+    public VistaColocacion(String nombreJugador, Tablero tablero) {
+        setTitle("Colocación de Barcos - " + nombreJugador);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // TABLERO
-        vistaTablero = new VistaTablero(usuario.getTablero());
+        vistaTablero = new VistaTablero(tablero);
         vistaTablero.setBackground(new Color(200, 230, 240));
         vistaTablero.setBorder(null);
         add(vistaTablero, BorderLayout.CENTER);
@@ -31,7 +28,7 @@ public class VistaColocacion extends JFrame {
         panelBarcos.setBackground(new Color(180, 220, 240));
         add(panelBarcos, BorderLayout.SOUTH);
 
-        // Panel orientaciÃ³n
+        // Panel orientación
         JPanel panelOrientacion = new JPanel(new BorderLayout());
         panelOrientacion.setOpaque(false);
 
@@ -57,9 +54,14 @@ public class VistaColocacion extends JFrame {
         crearBarco("Submarino", 2, "/Submarino.png");
         crearBarco("Crucero", 1, "/Crucero.png");
 
+        // Ajustar ventana
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje);
     }
 
     private void crearBarco(String tipo, int cantidad, String rutaImagen) {
@@ -84,15 +86,15 @@ public class VistaColocacion extends JFrame {
     }
 
     public String getOrientacionSeleccionada() {
-        return usuario.getOrientacion();
+        return orientacionLabel.getText().equals("Horizontal") ? "H" : "V";
     }
 
-    public void marcarBarcoColocado(Barco barco) {
+    public void marcarBarcoColocado(String tipoBarco) {
         for (Component c : panelBarcos.getComponents()) {
             if (c instanceof JPanel panel) {
                 for (Component hijo : panel.getComponents()) {
                     if (hijo instanceof JLabel label) {
-                        if (label.getText().startsWith(barco.getTipo())) {
+                        if (label.getText().startsWith(tipoBarco)) {
                             panel.setEnabled(false);
                             panel.setVisible(false);
                             break;
@@ -103,7 +105,7 @@ public class VistaColocacion extends JFrame {
         }
     }
 
-    // JLabel personalizado para escalar imÃ¡genes automÃ¡ticamente
+    // JLabel personalizado para escalar imágenes automáticamente
     static class ImagenEscaladaLabel extends JLabel {
         private Image imagen;
 
@@ -113,7 +115,7 @@ public class VistaColocacion extends JFrame {
                 if (url != null) {
                     this.imagen = new ImageIcon(url).getImage();
                 } else {
-                    System.err.println("No se encontrÃ³ la imagen: " + ruta);
+                    System.err.println("No se encontró la imagen: " + ruta);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
