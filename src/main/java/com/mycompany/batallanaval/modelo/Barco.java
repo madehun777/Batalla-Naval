@@ -4,16 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Barco {
-    private final String tipo;
-    private final int tamano;
-    private int vidasRestantes;
-    private final List<int[]> posiciones; // cada posición es [fila, columna]
+    private String tipo;
+    private int tamano;
+    private String orientacion; // "H" o "V"
+    private int fila;
+    private int columna;
+    private boolean colocado;
+    private List<boolean[]> partes; // cada parte del barco: true = intacto, false = impactado
 
     public Barco(String tipo, int tamano) {
         this.tipo = tipo;
         this.tamano = tamano;
-        this.vidasRestantes = tamano;
-        this.posiciones = new ArrayList<>();
+        this.colocado = false;
+        this.partes = new ArrayList<>();
     }
 
     public String getTipo() {
@@ -24,27 +27,64 @@ public class Barco {
         return tamano;
     }
 
-    public int getVidasRestantes() {
-        return vidasRestantes;
+    public String getOrientacion() {
+        return orientacion;
     }
 
-    public List<int[]> getPosiciones() {
-        return posiciones;
+    public void setOrientacion(String orientacion) {
+        this.orientacion = orientacion;
     }
 
-    public void asignarPosicion(int fila, int columna) {
-        if (posiciones.size() < tamano) {
-            posiciones.add(new int[]{fila, columna});
+    public void colocar(int fila, int columna, String orientacion) {
+        this.fila = fila;
+        this.columna = columna;
+        this.orientacion = orientacion;
+        this.colocado = true;
+
+        // inicializa partes (todas intactas)
+        this.partes.clear();
+        for (int i = 0; i < tamano; i++) {
+            this.partes.add(new boolean[]{true});
         }
     }
 
-    public void recibirImpacto() {
-        if (vidasRestantes > 0) {
-            vidasRestantes--;
+    public boolean isColocado() {
+        return colocado;
+    }
+
+    public boolean ocupa(int f, int c) {
+        if (!colocado) return false;
+
+        if (orientacion.equals("H")) {
+            return f == fila && c >= columna && c < columna + tamano;
+        } else { // "V"
+            return c == columna && f >= fila && f < fila + tamano;
+        }
+    }
+
+    public void impactar(int f, int c) {
+        if (!ocupa(f, c)) return;
+
+        if (orientacion.equals("H")) {
+            int index = c - columna;
+            partes.get(index)[0] = false;
+        } else {
+            int index = f - fila;
+            partes.get(index)[0] = false;
         }
     }
 
     public boolean estaHundido() {
-        return vidasRestantes == 0;
+        for (boolean[] parte : partes) {
+            if (parte[0]) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return tipo + " (" + tamano + " casillas)";
     }
 }
+
+
